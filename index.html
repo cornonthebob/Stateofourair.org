@@ -43,14 +43,14 @@
 }
     .scroll-button {
     position: fixed;
-    top: 20px;
-    right: 20px;
+    top: 870px;
+    right: 10px;
     z-index: 1000;
-    padding: 10px 20px;
+    padding: 7.5px 10px;
     background-color: #4a5568;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 10px;
     cursor: pointer;
     font-size: 16px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -246,7 +246,7 @@
     <div class="container">
         <div class="header">
         <h1>State of our Air</h1>
-        <button class="scroll-button">Scroll to Graph</button>
+        <button class="scroll-button">📈</button>
 
         <button id="infoButton" class="info-button">Info</button>
     </div>
@@ -1266,19 +1266,8 @@
         </div>
     `;
 }
-    const jumpButton = document.createElement('button');
-jumpButton.className = 'jump-to-graph';
-jumpButton.textContent = 'Jump to Graph';
-document.body.appendChild(jumpButton);
-jumpButton.addEventListener('click', () => {
-    const chart = document.getElementById('metricsChart');
-    if (chart) {
-        chart.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
-        });
-    }
-});
+    
+
 document.querySelector('.scroll-button').addEventListener('click', () => {
     const chart = document.getElementById('metricsChart');
     chart.scrollIntoView({ 
