@@ -20,6 +20,46 @@
         align-items: center;
         justify-content: space-between;
     }
+    .jump-to-graph {
+    display: none;  /* Hidden by default */
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Only show on mobile devices */
+@media (max-width: 768px) {
+    .jump-to-graph {
+        display: block;
+    }
+}
+    .scroll-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    padding: 10px 20px;
+    background-color: #4a5568;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+}
+
+.scroll-button:hover {
+    background-color: #2d3748;
+}
 
     .info-button {
         background-color: #f0f0f0;
@@ -206,6 +246,8 @@
     <div class="container">
         <div class="header">
         <h1>State of our Air</h1>
+        <button class="scroll-button">Scroll to Graph</button>
+
         <button id="infoButton" class="info-button">Info</button>
     </div>
 
@@ -236,7 +278,7 @@
          <div id="infoModal" class="info-modal">
         <div class="modal-content">
             <span id="closeModal" class="close-button">&times;</span>
-            <i><b>Welcome to State of our Air!</b><br> This website is meant to be a simple, easy to understand site that shows you the average concentrations of pollutants in our air over time. Please note that these are global averages and specific concentrations can differ on location. <b> This is intentional </b>. Climate change is an issure all of us face, and its an issue all of us have to solve. The purpose of this site is to inspire normal peple to take action- everyone matters and together all of us can save our planet.</i>
+            <i><b>Welcome to State of our Air!</b><br> This website is meant to be a simple, easy to understand site that shows you the average concentrations of pollutants in our air over time. Please note that these are global averages and specific concentrations can differ on location. <b> This is intentional </b>. Climate change is an issue all of us face, and its an issue all of us have to solve. The purpose of this site is to inspire normal peple to take action- everyone matters and together all of us can save our planet.</i>
         </div>
     </div>
     </div>
@@ -244,6 +286,7 @@
     const infoButton = document.getElementById('infoButton');
     const infoModal = document.getElementById('infoModal');
     const closeModal = document.getElementById('closeModal');
+
 
     infoButton.addEventListener('click', () => {
         infoModal.style.display = 'flex';
@@ -1223,7 +1266,26 @@
         </div>
     `;
 }
-
+    const jumpButton = document.createElement('button');
+jumpButton.className = 'jump-to-graph';
+jumpButton.textContent = 'Jump to Graph';
+document.body.appendChild(jumpButton);
+jumpButton.addEventListener('click', () => {
+    const chart = document.getElementById('metricsChart');
+    if (chart) {
+        chart.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+        });
+    }
+});
+document.querySelector('.scroll-button').addEventListener('click', () => {
+    const chart = document.getElementById('metricsChart');
+    chart.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'center'
+    });
+});
     function createMetricCards() {
         const metricsGrid = document.getElementById('metricsGrid');
         metricsGrid.innerHTML = '';
@@ -1243,7 +1305,7 @@
             metricsGrid.appendChild(card);
         });
     }
-
+    
     function updateSelectedMetric(metricId) {
         selectedMetric = metricId;
         createMetricCards();
@@ -1277,6 +1339,7 @@
 
         chart.update();
     }
+
 
     function createChart() {
     const ctx = document.getElementById('metricsChart').getContext('2d');
@@ -1394,9 +1457,12 @@
                     }
                 },
                 tooltip: {
-                    mode: 'index',
-                    intersect: false,
+                    mode: 'nearest',
+                    intersect: true,
                     callbacks: {
+                        title: function(tooltipItems) {
+                            return Math.floor(tooltipItems[0].parsed.x).toString(); // Format year without comma
+                        },
                         label: function(context) {
                             let label = context.dataset.label || '';
                             if (label) {
@@ -1450,11 +1516,41 @@
                         }
                     },
                     ticks: {
-                        stepSize: 1
+                        stepSize: 1,
+                        callback: function(value) {
+                            return Math.floor(value).toString(); // Formats the year without commas
+                        }
                     }
                 }
+            },
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: true
             }
-        }
+        },
+        plugins: [{
+            id: 'crosshair',
+            afterDraw: (chart, args, options) => {
+                const { ctx, chartArea, scales } = chart;
+                const { top, bottom, left, right } = chartArea;
+                
+                if (chart._active && chart._active.length) {
+                    const activePoint = chart._active[0];
+                    const x = activePoint.element.x;
+                    
+                    // Draw vertical line
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(x, top);
+                    ctx.lineTo(x, bottom);
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = 'black';
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+        }]
     });
 }   
 
